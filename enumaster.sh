@@ -436,7 +436,7 @@ function wpscan_regular() {
         echo
         echo "Command: wpscan --url http://$ip_address:$port_choice"
         echo
-        wpscan http://$ip_address:$port_choice > wpscan_url_$port_choice.txt 2>&1
+        wpscan --url http://$ip_address:$port_choice > wpscan_url_$port_choice.txt 2>&1
         echo "Wpscan Results:"
         echo
         cat wpscan_url_$port_choice.txt
@@ -448,9 +448,9 @@ function wpscan_plugin() {
         echo
         read -p "Port: " port_choice
         echo
-        echo "Command: wpscan --url http://$ip_address:$port_choice --enumerate -p"
+        echo "Command: wpscan --url http://$ip_address:$port_choice --enumerate p"
         echo
-        wpscan --url http://$ip_address:$port_choice --enumerate -p > wpscan_plugin_$port_choice.txt 2>&1
+        wpscan --url http://$ip_address:$port_choice --enumerate p > wpscan_plugin_$port_choice.txt 2>&1
         echo "Wpscan Plugin Results:"
         echo
         cat wpscan_plugin_$port_choice.txt
@@ -797,3 +797,4 @@ do
                 choice_ldap
         fi
 done
+
