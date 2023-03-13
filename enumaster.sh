@@ -9,7 +9,7 @@ echo "### /_____/_/ /_/\__,_/_/ /_/ /_/\__,_/____/\__/\___/_/      ###"
 echo "###                                                          ###"
 echo "################################################################"
 
-echo "Version 1.0"
+echo "Version 1.1"
 
 #Login with sudo in this shell for future commands
 sudo echo 
@@ -65,23 +65,37 @@ function search_nmap_scripts() {
 
 function search_nmap_ftp() {
         echo "Running nmap scan with all ftp scripts..."
-        echo "Command: nmap --script ftp-* -p 21 $ip_address"
         echo
-        nmap --script "ftp-*" -p 21 $ip_address > ftp_nmap_results.txt 2>&1
+        read -p "Port: " port_choice
+        echo
+        read -p "Skip Host Discovery [y/n]: " host_choice
+        echo
+        if [[ $host_choice -eq "y" ]]; then
+                echo "Command: nmap -Pn --script ftp-* -p $port_choice $ip_address"
+                echo
+                nmap -Pn --script "ftp-*" -p $port_choice $ip_address > ftp_nmap_$port_choice.txt 2>&1
+        else
+                echo "Command: nmap --script ftp-* -p $port_choice $ip_address"
+                echo
+                nmap --script "ftp-*" -p $port_choice $ip_address > ftp_nmap_$port_choice.txt 2>&1
+        fi
         echo "FTP Script Results:"
         echo
-        cat ftp_nmap_results.txt
+        cat ftp_nmap_$port_choice.txt
         echo
 }
 
 function search_nmap_smtp() {
         echo "Running nmap scan with all smtp scripts..."
-        echo "Command: nmap --script smtp-* -p 25 $ip_address"
         echo
-        nmap --script "smtp-*" -p 25 $ip_address > smtp_nmap_results.txt 2>&1
+        read -p "Port: " port_choice
+        echo
+        echo "Command: nmap --script smtp-* -p $port_choice $ip_address"
+        echo
+        nmap --script "smtp-*" -p $port_shoice $ip_address > smtp_nmap_$port_choice.txt 2>&1
         echo "SMTP Script Results:"
         echo
-        cat smtp_nmap_results.txt
+        cat smtp_nmap_$port_choice.txt
         echo
 }
 
@@ -110,23 +124,29 @@ function webapp_webdav_test() {
 
 function webapp_dirb_scan() {
         echo "Running dirbuster..."
-        echo "Command: dirb http://$ip_address -f"
         echo
-        dirb http://$ip_address -f > dirb_scan.txt 2>&1
+        read -p "Port: " port_choice
+        echo
+        echo "Command: dirb http://$ip_address:$port_choice -f"
+        echo
+        dirb http://$ip_address:$port_choice -f > dirb_scan_$port_choice.txt 2>&1
         echo "Dirbuster Results:"
         echo
-        cat dirb_scan.txt
+        cat dirb_scan_$port_choice.txt
         echo
 }
 
 function webapp_nikto_scan() {
         echo "Running nikto..."
-        echo "Command: nikto -h $ip_address -ask no"
         echo
-        nikto -h $ip_address -ask no > nikto_scan.txt 2>&1
+        read -p "Port: " port_choice
+        echo
+        echo "Command: nikto -h $ip_address:$port_choice -ask no"
+        echo
+        nikto -h $ip_address:$port_choice -ask no > nikto_scan_$port_choice.txt 2>&1
         echo "Nikto Results:"
         echo
-        cat nikto_scan.txt
+        cat nikto_scan_$port_choice.txt
         echo
 }
 
@@ -188,6 +208,25 @@ function smb_nmap_scan() {
         echo
 }
 
+
+function nmap_vuln_scan() {
+        echo "Running Nmap Vulnerability Scan..."
+        echo
+        read -p "Skip Host Discovery [y/n]: " host_choice
+        echo
+        if [[ $host_choice -eq "y" ]]; then
+                echo "Command: nmap -Pn -sV --script vuln $ip_address"
+                nmap -Pn -sV --script vuln $ip_address > nmap_vuln_results.txt 2>&1
+        else
+                echo "Command: nmap -sV --script vuln $ip_address"
+                nmap -sV --script vuln $ip_address > nmap_vuln_results.txt 2>&1
+        fi
+        echo "Nmap Vulnerability Results:"
+        echo
+        cat nmap_vuln_results.txt
+        echo
+}
+
 function smbclient_open_scan() {
         echo "Running smbclient open scan..."
         echo "Command: smbclient -L $ip_address -U \" \"%\" \""
@@ -215,12 +254,29 @@ function smbclient_auth_scan() {
 
 function mysql_nmap_scan() {
         echo "Running Nmap MySQL Scan..."
-        echo "Command: nmap --script mysql-* -p 3306 $ip_address"
         echo
-        nmap --script "mysql-*" -p 3306 $ip_address > mysql_nmap_results.txt 2>&1
+        read -p "Port: " port_choice
+        echo
+        echo "Command: nmap --script mysql-* -p $port_choice $ip_address"
+        echo
+        nmap --script "mysql-*" -p $port_choice $ip_address > mysql_nmap_$port_choie.txt 2>&1
         echo "Nmap MySQL Results:"
         echo
-        cat mysql_nmap_results.txt
+        cat mysql_nmap_$port_choice.txt
+        echo
+}
+
+function mssql_nmap_scan() {
+        echo "Running Nmap MS SQL Scan..."
+        echo
+        read -p "Port: " port_choice
+        echo
+        echo "Command: nmap --script ms-sql-* -p $port_choice $ip_address"
+        echo
+        nmap --script "ms-sql-*" -p $port_choice $ip_address > mssql_nmap_$port_choice.txt 2>&1
+        echo "Nmap MS SQL Results:"
+        echo
+        cat mssql_nmap_$port_choice.txt
         echo
 }
 
@@ -341,6 +397,97 @@ function onesixtyone_scan() {
         echo
 }
 
+function nmap_ldap_scan() {
+        echo "Performing Nmap LDAP Script Scan..."
+        echo "Command: nmap -n -sV --script ldap* $ip_address"
+        echo
+        nmap -n -sV --script "ldap*" $ip_address > ldap_nmap.txt
+        echo
+        cat ldap_nmap.txt
+        echo
+}
+
+function ldapsearch_scan() {
+        echo "Performing Ldapsearch Query..."
+        echo "Command: ldapsearch -v -x -b <DC=xxx,DC=xxx> -H ldap://$ip_address (objectclass=*)"
+        echo
+        read -p "Domain (DC=,DC=): " domain_choice
+        ldapsearch -v -x -b "$domain_choice" -H "ldap://$ip_address" "(objectclass=*)" > ldapsearch_results.txt
+        echo
+        cat ldapsearch_results.txt
+        echo
+}
+
+function ftp_default_creds() {
+        echo "Attempting to brute force FTP..."
+        echo
+        read -p "Port: " port_choice
+        echo
+        echo "hydra -s $port_choice -C /usr/share/wordlists/ftp-default.txt -u -f $ip_address ftp"
+        echo
+        hydra -s $port_choice -C /usr/share/wordlists/ftp-default.txt -u -f $ip_address ftp
+        echo
+}
+
+function wpscan_regular() {
+        echo "Running Wpscan..."
+        echo
+        read -p "Port: " port_choice
+        echo
+        echo "Command: wpscan --url http://$ip_address:$port_choice"
+        echo
+        wpscan http://$ip_address:$port_choice > wpscan_url_$port_choice.txt 2>&1
+        echo "Wpscan Results:"
+        echo
+        cat wpscan_url_$port_choice.txt
+        echo
+}
+
+function wpscan_plugin() {
+        echo "Running Wpscan Plugin Enumeration..."
+        echo
+        read -p "Port: " port_choice
+        echo
+        echo "Command: wpscan --url http://$ip_address:$port_choice --enumerate -p"
+        echo
+        wpscan --url http://$ip_address:$port_choice --enumerate -p > wpscan_plugin_$port_choice.txt 2>&1
+        echo "Wpscan Plugin Results:"
+        echo
+        cat wpscan_plugin_$port_choice.txt
+        echo
+}
+
+function mysql_default_creds() {
+        echo "Attempting to brute force MySQL..."
+        echo
+        read -p "Port: " port_choice
+        echo
+        echo "hydra -s $port_choice -C /usr/share/wordlists/mysql-default.txt -u -f $ip_address"
+        echo
+        hydra -s $port_choice -C /usr/share/wordlists/mysql-default.txt -u -f $ip_address
+        echo
+}
+
+function rpc_null_session() {
+        echo "Checking for NULL sessions..."
+        echo
+        echo "rpcclient -U \"\" $ip_address"
+        echo
+        rpcclient -U "" $ip_address
+        echo
+}
+
+function netbios_scan() {
+        echo "Running nbtscan..."
+        echo
+        echo "Command: nbtscan $ip_address"
+        echo
+        nbtscan $ip_address > nbtscan_results.txt
+        echo
+        cat nbtscan_results.txt
+        echo
+}
+
 #########################################################
 
 #################### Choice Functions ####################
@@ -352,6 +499,7 @@ function choice_nmap() {
         echo "2. Aggressive All Port Scan"
         echo "3. Full Port UDP Scan"
         echo "4. Search Nmap Scripts by Keyword"
+        echo "5. Nmap Vulnerability Scan"
         echo
         read -p "Choice: " nmap_choice
 
@@ -363,6 +511,8 @@ function choice_nmap() {
                 full_nmap_udp_scan
         elif [[ $nmap_choice -eq "4" ]]; then
                 search_nmap_scripts
+        elif [[ $nmap_choice -eq "5" ]]; then
+                nmap_vuln_scan
         else
                 echo "Invalid Option"
         fi
@@ -377,6 +527,8 @@ function choice_webapp() {
         echo "1. Nikto (Web Vulnerability Scanner)"
         echo "2. Dirbuster (Hidden Directory Scanner)"
         echo "3. Davtest (Test for potential WebDAV Exploitation)"
+        echo "4. Wpscan URL"
+        echo "5. Wpscan Plugins"
         echo
         read -p "Choice: " webapp_choice
 
@@ -386,6 +538,10 @@ function choice_webapp() {
                 webapp_dirb_scan
         elif [[ $webapp_choice -eq "3" ]]; then
                 webapp_webdav_test
+        elif [[ $webapp_choice -eq "4" ]]; then
+                wpscan_regular
+        elif [[ $webapp_choice -eq "5" ]]; then
+                wpscan_plugin
         fi
         echo
         printf "${RED}--------------- End Web App ---------------${NC}\n"
@@ -441,10 +597,13 @@ function choice_ftp() {
         printf "${GREEN}--------------- Begin FTP ---------------${NC}\n"
         echo "FTP Options:"
         echo "1. Nmap FTP Scripts"
+        echo "2. FTP Default Creds"
         echo
         read -p "Choice: " ftp_choice
         if [[ $ftp_choice -eq "1" ]]; then
                 search_nmap_ftp
+        elif [[ $ftp_choice -eq "2" ]]; then
+                ftp_default_creds
         fi
         printf "${RED}--------------- End FTP ---------------${NC}\n"
 }
@@ -476,10 +635,13 @@ function choice_rpcbind() {
         printf "${GREEN}--------------- Begin RPCBIND ---------------${NC}\n"
         echo "RPCBIND Options:"
         echo "1. Rpcinfo"
+        echo "2. Null Session Check"
         echo
         read -p "Choice: " rpc_choice
         if [[ $rpc_choice -eq "1" ]]; then
                 find_rpc_info
+        elif [[ $rpc_choice -eq "2" ]]; then
+                rpc_null_session
         fi
         echo
         printf "${RED}--------------- End RPCBIND ---------------${NC}\n"
@@ -510,10 +672,16 @@ function choice_sql() {
         printf "${GREEN}--------------- Begin SQL ---------------${NC}\n"
         echo "SQL Options:"
         echo "1. MySQL Nmap Scan"
+        echo "2. MS SQL Nmap Scan"
+        echo "3. MySQL Default Creds"
         echo
         read -p "Choice: " sql_choice
         if [[ $sql_choice -eq "1" ]]; then
                 mysql_nmap_scan
+        elif [[ $sql_choice -eq "2" ]]; then
+                mssql_nmap_scan
+        elif [[ $sql_choice -eq "3" ]]; then
+                mysql_default_creds
         fi
         echo
         printf "${RED}--------------- End SQL ---------------${NC}\n"
@@ -550,13 +718,33 @@ function choice_misctools() {
         printf "${GREEN}--------------- Begin Misc Tools ---------------${NC}\n"
         echo "Misc Tools Options:"
         echo "1. Autorecon"
+        echo "2. NetBIOS Scan (nbtscan)"
         echo
         read -p "Choice: " misctools_choice
         if [[ $misctools_choice -eq "1" ]]; then
                 autorecon_scan
+        elif [[ $misctools_choice -eq "2" ]]; then
+                netbios_scan
         fi
         echo
         printf "${RED}--------------- End Misc Tools ---------------${NC}\n"
+}
+
+function choice_ldap() {
+        echo
+        printf "${GREEN}--------------- Begin LDAP Tools ---------------${NC}\n"
+        echo "LDAP Tools:"
+        echo "1. Nmap LDAP Scripts"
+        echo "2. Ldapsearch"
+        echo
+        read -p "Choice: " ldap_choice
+        if [[ $ldap_choice -eq "1" ]]; then
+                nmap_ldap_scan
+        elif [[ $ldap_choice -eq "2" ]]; then
+                ldapsearch_scan
+        fi
+        echo
+        printf "${RED}--------------- End LDAP Tools ---------------${NC}\n"
 }
 
 ##########################################################
@@ -578,6 +766,7 @@ do
         echo "10. SQL"
         echo "11. DNS"
         echo "12. Misc Enum Tools"
+        echo "13. LDAP Tools"
         read -p "Choice: " operation_choice
 
         if [[ $operation_choice -eq "1" ]]; then
@@ -604,5 +793,7 @@ do
                 choice_dns
         elif [[ $operation_choice -eq "12" ]]; then
                 choice_misctools
+        elif [[ $operation_choice -eq "13" ]]; then
+                choice_ldap
         fi
 done
