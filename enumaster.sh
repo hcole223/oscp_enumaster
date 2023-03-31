@@ -9,7 +9,7 @@ echo "### /_____/_/ /_/\__,_/_/ /_/ /_/\__,_/____/\__/\___/_/      ###"
 echo "###                                                          ###"
 echo "################################################################"
 
-echo "Version 1.1"
+echo "Version 1.2"
 
 #Login with sudo in this shell for future commands
 sudo echo 
@@ -46,9 +46,9 @@ function full_nmap_scan() {
 
 function full_nmap_udp_scan() {
         echo "Running nmap scan to get open UDP ports..."
-        echo "Command: sudo nmap -v -sI -sS -p- -T4 $ip_address"
+        echo "Command: sudo nmap -v -sU -sS -T4 $ip_address"
         echo
-        sudo nmap -v -sU -sS -p- -T4 $ip_address > full_port_udp_scan.txt 2>&1
+        sudo nmap -v -sU -sS -T4 $ip_address > full_port_udp_scan.txt 2>&1
         echo "Nmap UDP Results:"
         echo
         cat full_port_udp_scan.txt
@@ -116,9 +116,14 @@ function webapp_webdav_test() {
         echo "Command: davtest -url http://$ip_address"
         echo
         davtest -url http://$ip_address > davtest.txt 2>&1
-        echo "Davtest Results:"
+        davtest -url http://$ip_address/webdav > davtest2.txt 2>&1
+        echo "Davtest Root Results:"
         echo
         cat davtest.txt
+        echo
+        echo "Davtest /webdav Results:"
+        echo
+        cat davtest2.txt
         echo
 }
 
@@ -259,7 +264,7 @@ function mysql_nmap_scan() {
         echo
         echo "Command: nmap --script mysql-* -p $port_choice $ip_address"
         echo
-        nmap --script "mysql-*" -p $port_choice $ip_address > mysql_nmap_$port_choie.txt 2>&1
+        nmap --script "mysql-*" -p $port_choice $ip_address > mysql_nmap_$port_choice.txt 2>&1
         echo "Nmap MySQL Results:"
         echo
         cat mysql_nmap_$port_choice.txt
@@ -368,9 +373,9 @@ function nmblookup_scan() {
 
 function snmpcheck_scan() {
         echo "Performing Snmpcheck Scan..."
-        echo "Command: snmpcheck $ip_address -c public"
+        echo "Command: snmp-check $ip_address"
         echo
-        snmpcheck $ip_address -c public > snmpcheck_results.txt 2>&1
+        snmp-check $ip_address > snmpcheck_results.txt 2>&1
         echo
         cat snmpcheck_results.txt
         echo
@@ -464,7 +469,7 @@ function mysql_default_creds() {
         echo
         echo "hydra -s $port_choice -C /usr/share/wordlists/mysql-default.txt -u -f $ip_address"
         echo
-        hydra -s $port_choice -C /usr/share/wordlists/mysql-default.txt -u -f $ip_address
+        hydra -s $port_choice -C /usr/share/wordlists/mysql-default.txt -u -f $ip_address mysql
         echo
 }
 
@@ -488,6 +493,22 @@ function netbios_scan() {
         echo
 }
 
+ffuf_scan() {
+        echo "Running ffuf..."
+        echo
+        read -p "Port: " port_choice
+        echo
+        read -p "http or https: " protocol_choice
+        echo
+        echo "Command: ffuf -c -w /usr/share/seclists/Discovery/Web-Content/raft-small-directories.txt -u $protocol_choice://$ip_address:$port_choice/FUZZ -t 500 > ffuz_results_$port_choice.txt 2>&1"
+        echo
+        ffuf -c -w /usr/share/seclists/Discovery/Web-Content/raft-small-directories.txt -u $protocol_choice://$ip_address:$port_choice/FUZZ -t 500 > ffuz_results_$port_choice.txt 2>&1
+        echo
+        cat ffuz_results_$port_choice.txt
+        echo
+}
+
+
 #########################################################
 
 #################### Choice Functions ####################
@@ -497,7 +518,7 @@ function choice_nmap() {
         echo "Nmap Scan Options:"
         echo "1. Full Port TCP Scan"
         echo "2. Aggressive All Port Scan"
-        echo "3. Full Port UDP Scan"
+        echo "3. Top Port UDP Scan"
         echo "4. Search Nmap Scripts by Keyword"
         echo "5. Nmap Vulnerability Scan"
         echo
@@ -529,6 +550,7 @@ function choice_webapp() {
         echo "3. Davtest (Test for potential WebDAV Exploitation)"
         echo "4. Wpscan URL"
         echo "5. Wpscan Plugins"
+        echo "6. ffuf"
         echo
         read -p "Choice: " webapp_choice
 
@@ -542,6 +564,8 @@ function choice_webapp() {
                 wpscan_regular
         elif [[ $webapp_choice -eq "5" ]]; then
                 wpscan_plugin
+        elif [[ $webapp_choice -eq "6" ]]; then
+                ffuf_scan
         fi
         echo
         printf "${RED}--------------- End Web App ---------------${NC}\n"
