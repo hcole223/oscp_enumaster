@@ -9,7 +9,7 @@ echo "### /_____/_/ /_/\__,_/_/ /_/ /_/\__,_/____/\__/\___/_/      ###"
 echo "###                                                          ###"
 echo "################################################################"
 
-echo "Version 1.2"
+echo "Version 1.3"
 
 #Login with sudo in this shell for future commands
 sudo echo 
